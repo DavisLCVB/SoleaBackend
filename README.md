@@ -1,16 +1,18 @@
-# Analizador de Imágenes con Gemini AI
+# Analizador Multimodal con Gemini AI
 
-Aplicación web para analizar imágenes usando Google Gemini API, construida con TypeScript, Express y vanilla JavaScript.
+Aplicación web para analizar imágenes y audio usando Google Gemini API, construida con TypeScript, Express y vanilla JavaScript.
 
 ## Características
 
-- 🤖 Análisis de imágenes con Google Gemini 2.0 Flash
-- 📁 Soporte para JPEG, PNG, WebP y GIF
-- 💬 Prompts personalizables
-- 🎨 Interfaz responsive y moderna
-- ✅ Validación de archivos (tipo y tamaño)
+- 🤖 Análisis multimodal con Google Gemini 1.5 Flash
+- 📸 **Imágenes**: JPEG, PNG, WebP y GIF (máx 5MB)
+- 🎵 **Audio**: MP3, WAV, OGG, WebM (máx 10MB)
+- 💬 Prompts personalizables para cada tipo
+- 🎨 Interfaz con tabs responsive y moderna
+- ✅ Validación doble de archivos (cliente + servidor)
 - 🔒 Manejo robusto de errores
 - 🚀 TypeScript para mayor seguridad de tipos
+- 📡 API REST con rutas separadas
 
 ## Stack Tecnológico
 
@@ -155,10 +157,13 @@ SoleaBackend/
 ├── .gitignore
 ├── package.json
 ├── tsconfig.json
+├── API-Docs.md              # Documentación detallada de la API
 └── README.md
 ```
 
 ## API Endpoints
+
+> 📖 **Documentación completa**: Ver [API-Docs.md](./API-Docs.md) para ejemplos detallados, códigos de error y casos de uso.
 
 ### POST /api/analyze-image
 Analiza una imagen con Gemini AI.
@@ -182,6 +187,28 @@ Analiza una imagen con Gemini AI.
 - 413: Archivo muy grande (>5MB)
 - 500: Error del servidor o API
 
+### POST /api/analyze-audio
+Analiza un archivo de audio con Gemini AI.
+
+**Request:**
+- Content-Type: `multipart/form-data`
+- Body:
+  - `audio` (file): Archivo de audio a analizar
+  - `prompt` (string, opcional): Prompt personalizado (max 2000 caracteres)
+
+**Response:**
+```json
+{
+  "success": true,
+  "result": "Transcripción y análisis generado por Gemini..."
+}
+```
+
+**Errores:**
+- 400: Archivo no válido o faltante
+- 413: Archivo muy grande (>10MB)
+- 500: Error del servidor o API
+
 ### GET /api/health
 Verifica el estado del servidor y la conexión con Gemini.
 
@@ -198,14 +225,20 @@ Verifica el estado del servidor y la conexión con Gemini.
 
 ## Validaciones
 
-### Archivos
+### Archivos de Imagen
 - **Tipos permitidos**: JPEG, PNG, WebP, GIF
 - **Tamaño máximo**: 5MB
 - **Validación en**: Cliente y servidor
 
+### Archivos de Audio
+- **Tipos permitidos**: MP3, WAV, OGG, WebM
+- **Tamaño máximo**: 10MB
+- **Validación en**: Cliente y servidor
+
 ### Prompts
 - **Longitud máxima**: 2000 caracteres
-- **Prompt por defecto**: "Describe esta imagen en detalle, identificando objetos, escenas, colores, y cualquier texto visible."
+- **Prompt por defecto (imagen)**: "Describe esta imagen en detalle, identificando objetos, escenas, colores, y cualquier texto visible."
+- **Prompt por defecto (audio)**: "Transcribe este audio y proporciona un resumen de su contenido."
 
 ## Seguridad
 
@@ -228,9 +261,12 @@ Comparado con la especificación original:
 6. ✅ **UI/UX mejorada** con loading states y feedback
 7. ✅ **Configuración flexible** vía variables de entorno
 8. ✅ **Character counter** en textarea
-9. ✅ **Preview de imagen** antes de enviar
+9. ✅ **Preview de imagen y audio** antes de enviar
 10. ✅ **Soporte Vercel** serverless con configuración lista para deploy
 11. ✅ **Selección de modelo** configurable (gemini-1.5-flash por defecto)
+12. ✅ **Análisis multimodal** con soporte para imágenes y audio
+13. ✅ **Interfaz con tabs** para cambiar entre tipos de archivos
+14. ✅ **Rutas API separadas** para cada tipo de análisis
 
 ## Troubleshooting
 

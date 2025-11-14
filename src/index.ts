@@ -19,7 +19,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api', analyzeRoutes);
 
 // Root route - serve index.html
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 

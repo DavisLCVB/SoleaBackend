@@ -3,9 +3,9 @@ import multer from 'multer';
 
 export const errorHandler = (
   err: Error,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   console.error('Error:', err);
 
@@ -24,7 +24,7 @@ export const errorHandler = (
   }
 
   // Handle custom errors
-  res.status(500).json({
+  return res.status(500).json({
     success: false,
     error: err.message || 'Internal server error',
   });

@@ -1,18 +1,19 @@
 import { Router, Request, Response } from 'express';
-import { upload } from '../middleware/upload.middleware';
+import { uploadImage, uploadAudio } from '../middleware/upload.middleware';
 import geminiService from '../services/gemini.service';
-import { AnalyzeImageResponse } from '../types';
+import { AnalyzeImageResponse, AnalyzeAudioResponse } from '../types';
 
 const router = Router();
 
-// Default prompt if none provided
-const DEFAULT_PROMPT = 'Describe esta imagen en detalle, identificando objetos, escenas, colores, y cualquier texto visible.';
+// Default prompts
+const DEFAULT_IMAGE_PROMPT = 'Describe esta imagen en detalle, identificando objetos, escenas, colores, y cualquier texto visible.';
+const DEFAULT_AUDIO_PROMPT = 'Transcribe este audio y proporciona un resumen de su contenido.';
 
 /**
  * POST /api/analyze-image
  * Analyze an uploaded image using Gemini AI
  */
-router.post('/analyze-image', upload.single('image'), async (req: Request, res: Response) => {
+router.post('/analyze-image', uploadImage.single('image'), async (req: Request, res: Response) => {
   try {
     // Validate file upload
     if (!req.file) {
@@ -23,7 +24,7 @@ router.post('/analyze-image', upload.single('image'), async (req: Request, res: 
     }
 
     // Get prompt from request body or use default
-    const prompt = req.body.prompt?.trim() || DEFAULT_PROMPT;
+    const prompt = req.body.prompt?.trim() || DEFAULT_IMAGE_PROMPT;
 
     // Validate prompt length
     if (prompt.length > 2000) {
@@ -41,13 +42,13 @@ router.post('/analyze-image', upload.single('image'), async (req: Request, res: 
     );
 
     // Send successful response
-    res.json({
+    return res.json({
       success: true,
       result,
     } as AnalyzeImageResponse);
   } catch (error) {
     console.error('Error in analyze-image route:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
     } as AnalyzeImageResponse);
@@ -55,14 +56,60 @@ router.post('/analyze-image', upload.single('image'), async (req: Request, res: 
 });
 
 /**
+ * POST /api/analyze-audio
+ * Analyze an uploaded audio file using Gemini AI
+ */
+router.post('/analyze-audio', uploadAudio.single('audio'), async (req: Request, res: Response) => {
+  try {
+    // Validate file upload
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: 'No audio file provided',
+      } as AnalyzeAudioResponse);
+    }
+
+    // Get prompt from request body or use default
+    const prompt = req.body.prompt?.trim() || DEFAULT_AUDIO_PROMPT;
+
+    // Validate prompt length
+    if (prompt.length > 2000) {
+      return res.status(400).json({
+        success: false,
+        error: 'Prompt exceeds maximum length of 2000 characters',
+      } as AnalyzeAudioResponse);
+    }
+
+    // Analyze audio with Gemini
+    const result = await geminiService.analyzeAudio(
+      req.file.buffer,
+      req.file.mimetype,
+      prompt
+    );
+
+    // Send successful response
+    return res.json({
+      success: true,
+      result,
+    } as AnalyzeAudioResponse);
+  } catch (error) {
+    console.error('Error in analyze-audio route:', error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    } as AnalyzeAudioResponse);
+  }
+});
+
+/**
  * GET /api/health
  * Health check endpoint
  */
-router.get('/health', async (req: Request, res: Response) => {
+router.get('/health', async (_req: Request, res: Response) => {
   try {
     const geminiHealthy = await geminiService.healthCheck();
 
-    res.json({
+    return res.json({
       success: true,
       status: 'healthy',
       services: {
@@ -70,7 +117,7 @@ router.get('/health', async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(503).json({
+    return res.status(503).json({
       success: false,
       status: 'unhealthy',
       error: 'Service unavailable',

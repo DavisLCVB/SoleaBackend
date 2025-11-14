@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import config from '../config';
-import { GeminiImageData } from '../types';
+import { GeminiImageData, GeminiAudioData } from '../types';
 
 class GeminiService {
   private genAI: GoogleGenerativeAI;
@@ -32,6 +32,29 @@ class GeminiService {
     } catch (error) {
       console.error('Error analyzing image with Gemini:', error);
       throw new Error('Failed to analyze image with Gemini API');
+    }
+  }
+
+  /**
+   * Analyze an audio file with a custom prompt using Gemini API
+   */
+  async analyzeAudio(audioBuffer: Buffer, mimeType: string, prompt: string): Promise<string> {
+    try {
+      const audioData: GeminiAudioData = {
+        inlineData: {
+          data: audioBuffer.toString('base64'),
+          mimeType,
+        },
+      };
+
+      const result = await this.model.generateContent([prompt, audioData]);
+      const response = await result.response;
+      const text = response.text();
+
+      return text;
+    } catch (error) {
+      console.error('Error analyzing audio with Gemini:', error);
+      throw new Error('Failed to analyze audio with Gemini API');
     }
   }
 

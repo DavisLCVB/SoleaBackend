@@ -21,7 +21,27 @@ export interface AppConfig {
   geminiApiKey: string;
   geminiModel: string;
   maxFileSize: number;
-  allowedMimeTypes: string[];
+  allowedImageTypes: string[];
+  allowedAudioTypes: string[];
+  maxAudioSize: number;
   corsOrigin: string;
   nodeEnv: string;
+}
+
+export interface AnalyzeAudioRequest {
+  file: Express.Multer.File;
+  prompt?: string;
+}
+
+export interface AnalyzeAudioResponse {
+  success: boolean;
+  result?: string;
+  error?: string;
+}
+
+export interface GeminiAudioData {
+  inlineData: {
+    data: string;
+    mimeType: string;
+  };
 }

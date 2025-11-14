@@ -3,58 +3,106 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Analizador de Imágenes con Gemini AI</title>
+  <title>Analizador Multimodal con Gemini AI</title>
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>🤖 Analizador de Imágenes</h1>
+      <h1>🤖 Analizador Multimodal</h1>
       <p class="subtitle">Powered by Google Gemini AI</p>
     </header>
 
     <main>
-      <form id="analyzeForm" enctype="multipart/form-data">
-        <div class="form-group">
-          <label for="imageInput" class="file-label">
-            <span class="file-label-text">📁 Seleccionar imagen</span>
-            <input
-              type="file"
-              id="imageInput"
-              name="image"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              required
-            >
-          </label>
-          <span id="fileName" class="file-name"></span>
-        </div>
-
-        <div id="imagePreview" class="image-preview"></div>
-
-        <div class="form-group">
-          <label for="promptInput">Prompt personalizado (opcional)</label>
-          <textarea
-            id="promptInput"
-            name="prompt"
-            rows="4"
-            maxlength="2000"
-            placeholder="Ejemplo: Describe los objetos en esta imagen y sugiere un título creativo..."
-          ></textarea>
-          <small class="char-counter">
-            <span id="charCount">0</span> / 2000 caracteres
-          </small>
-        </div>
-
-        <button type="submit" id="submitBtn" class="btn btn-primary">
-          Analizar Imagen
-        </button>
-      </form>
-
-      <div id="loading" class="loading hidden">
-        <div class="spinner"></div>
-        <p>Analizando imagen con Gemini AI...</p>
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="image">📸 Imagen</button>
+        <button class="tab-btn" data-tab="audio">🎵 Audio</button>
       </div>
 
+      <!-- Image Tab -->
+      <div id="imageTab" class="tab-content active">
+        <form id="analyzeImageForm" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="imageInput" class="file-label">
+              <span class="file-label-text">📁 Seleccionar imagen</span>
+              <input
+                type="file"
+                id="imageInput"
+                name="image"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+              >
+            </label>
+            <span id="imageFileName" class="file-name"></span>
+          </div>
+
+          <div id="imagePreview" class="image-preview"></div>
+
+          <div class="form-group">
+            <label for="imagePromptInput">Prompt personalizado (opcional)</label>
+            <textarea
+              id="imagePromptInput"
+              name="prompt"
+              rows="4"
+              maxlength="2000"
+              placeholder="Ejemplo: Describe los objetos en esta imagen y sugiere un título creativo..."
+            ></textarea>
+            <small class="char-counter">
+              <span id="imageCharCount">0</span> / 2000 caracteres
+            </small>
+          </div>
+
+          <button type="submit" id="submitImageBtn" class="btn btn-primary">
+            Analizar Imagen
+          </button>
+        </form>
+      </div>
+
+      <!-- Audio Tab -->
+      <div id="audioTab" class="tab-content">
+        <form id="analyzeAudioForm" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="audioInput" class="file-label">
+              <span class="file-label-text">🎵 Seleccionar audio</span>
+              <input
+                type="file"
+                id="audioInput"
+                name="audio"
+                accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/webm"
+              >
+            </label>
+            <span id="audioFileName" class="file-name"></span>
+          </div>
+
+          <div id="audioPreview" class="audio-preview"></div>
+
+          <div class="form-group">
+            <label for="audioPromptInput">Prompt personalizado (opcional)</label>
+            <textarea
+              id="audioPromptInput"
+              name="prompt"
+              rows="4"
+              maxlength="2000"
+              placeholder="Ejemplo: Transcribe este audio y resume los puntos principales..."
+            ></textarea>
+            <small class="char-counter">
+              <span id="audioCharCount">0</span> / 2000 caracteres
+            </small>
+          </div>
+
+          <button type="submit" id="submitAudioBtn" class="btn btn-primary">
+            Analizar Audio
+          </button>
+        </form>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p id="loadingMessage">Analizando con Gemini AI...</p>
+      </div>
+
+      <!-- Result -->
       <div id="result" class="result hidden">
         <h2>Resultado del Análisis</h2>
         <div id="resultContent" class="result-content"></div>
@@ -63,6 +111,7 @@
         </button>
       </div>
 
+      <!-- Error -->
       <div id="error" class="error hidden">
         <h3>Error</h3>
         <p id="errorMessage"></p>
