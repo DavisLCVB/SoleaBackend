@@ -8,7 +8,6 @@ class GeminiService {
 
   constructor() {
     this.genAI = new GoogleGenerativeAI(config.geminiApiKey);
-    // Using stable model with better free tier support
     this.model = this.genAI.getGenerativeModel({ model: config.geminiModel });
   }
 
@@ -60,11 +59,9 @@ class GeminiService {
 
   /**
    * Check if the Gemini API is accessible
-   * Note: This doesn't make an API call to avoid consuming quota
    */
   async healthCheck(): Promise<boolean> {
     try {
-      // Verify API key exists and model is configured
       return !!(this.genAI && this.model && config.geminiApiKey.length > 0);
     } catch (error) {
       console.error('Gemini API health check failed:', error);

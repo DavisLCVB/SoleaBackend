@@ -12,6 +12,7 @@ Documentación completa de la API REST para el analizador multimodal con Gemini 
 - [Endpoints](#endpoints)
   - [POST /api/analyze-image](#post-apianalyze-image)
   - [POST /api/analyze-audio](#post-apianalyze-audio)
+  - [POST /api/convert-currency](#post-apiconvert-currency)
   - [GET /api/health](#get-apihealth)
 - [Códigos de Estado](#códigos-de-estado)
 - [Ejemplos de Uso](#ejemplos-de-uso)
@@ -216,6 +217,186 @@ data = {'prompt': 'Transcribe y resume este audio'}
 response = requests.post(url, files=files, data=data)
 result = response.json()
 print(result['result'])
+```
+
+---
+
+### POST /api/convert-currency
+
+Convierte una cantidad de dinero de una divisa a otra usando tasas de cambio en tiempo real o históricas.
+
+#### Request
+
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Body (JSON):**
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `amount` | Number | ✅ Sí | Cantidad a convertir (debe ser positiva) |
+| `fromCurrency` | String | ✅ Sí | Código de divisa origen (3 letras, ej: USD, EUR, MXN) |
+| `toCurrency` | String | ✅ Sí | Código de divisa destino (3 letras, ej: USD, EUR, MXN) |
+| `date` | String | ❌ No | Fecha para conversión histórica (formato: YYYY-MM-DD, desde 1999-01-04) |
+
+**Divisas soportadas:**
+USD, EUR, GBP, JPY, MXN, CAD, AUD, CHF, CNY, INR, BRL, ZAR, y más de 150 divisas adicionales.
+
+#### Response
+
+**Success (200 OK):**
+```json
+{
+  "success": true,
+  "result": {
+    "amount": 100,
+    "fromCurrency": "USD",
+    "toCurrency": "EUR",
+    "convertedAmount": 92.45,
+    "exchangeRate": 0.9245,
+    "date": "2025-11-26"
+  }
+}
+```
+
+**Error (400 Bad Request):**
+```json
+{
+  "success": false,
+  "error": "Amount is required"
+}
+```
+
+```json
+{
+  "success": false,
+  "error": "Amount must be a positive number"
+}
+```
+
+```json
+{
+  "success": false,
+  "error": "Invalid source currency code: INVALID"
+}
+```
+
+```json
+{
+  "success": false,
+  "error": "Failed to fetch exchange rates from external API"
+}
+```
+
+**Error (400 Bad Request - Invalid Date):**
+```json
+{
+  "success": false,
+  "error": "Invalid date format. Use YYYY-MM-DD"
+}
+```
+
+```json
+{
+  "success": false,
+  "error": "Date cannot be in the future"
+}
+```
+
+```json
+{
+  "success": false,
+  "error": "Historical data is only available from 1999-01-04 onwards"
+}
+```
+
+#### Ejemplo cURL
+
+**Conversión con tasa actual:**
+```bash
+curl -X POST http://localhost:3000/api/convert-currency \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 100, "fromCurrency": "USD", "toCurrency": "EUR"}'
+```
+
+**Conversión con tasa histórica:**
+```bash
+curl -X POST http://localhost:3000/api/convert-currency \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 100, "fromCurrency": "USD", "toCurrency": "EUR", "date": "2024-01-15"}'
+```
+
+#### Ejemplo JavaScript (Fetch)
+
+**Conversión actual:**
+```javascript
+const conversionData = {
+  amount: 100,
+  fromCurrency: 'USD',
+  toCurrency: 'MXN'
+};
+
+const response = await fetch('http://localhost:3000/api/convert-currency', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(conversionData)
+});
+
+const data = await response.json();
+if (data.success) {
+  console.log(`${data.result.amount} ${data.result.fromCurrency} = ${data.result.convertedAmount} ${data.result.toCurrency}`);
+  console.log(`Tasa de cambio: ${data.result.exchangeRate}`);
+  console.log(`Fecha: ${data.result.date}`);
+}
+```
+
+**Conversión histórica:**
+```javascript
+const historicalData = {
+  amount: 1000,
+  fromCurrency: 'MXN',
+  toCurrency: 'USD',
+  date: '2023-06-15'
+};
+
+const response = await fetch('http://localhost:3000/api/convert-currency', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(historicalData)
+});
+
+const data = await response.json();
+if (data.success) {
+  console.log(`Conversión del ${data.result.date}:`);
+  console.log(`${data.result.amount} ${data.result.fromCurrency} = ${data.result.convertedAmount} ${data.result.toCurrency}`);
+}
+```
+
+#### Ejemplo Python (requests)
+
+```python
+import requests
+
+url = 'http://localhost:3000/api/convert-currency'
+data = {
+    'amount': 1000,
+    'fromCurrency': 'MXN',
+    'toCurrency': 'USD'
+}
+
+response = requests.post(url, json=data)
+result = response.json()
+
+if result['success']:
+    print(f"{result['result']['amount']} {result['result']['fromCurrency']} = {result['result']['convertedAmount']} {result['result']['toCurrency']}")
+    print(f"Tasa de cambio: {result['result']['exchangeRate']}")
+else:
+    print(f"Error: {result['error']}")
 ```
 
 ---

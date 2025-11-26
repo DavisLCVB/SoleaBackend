@@ -45,3 +45,44 @@ export interface GeminiAudioData {
     mimeType: string;
   };
 }
+
+export interface CurrencyConversionRequest {
+  amount: number;
+  fromCurrency: string;
+  toCurrency: string;
+  date?: string; // Optional: YYYY-MM-DD format for historical rates
+}
+
+export interface CurrencyConversionResponse {
+  success: boolean;
+  result?: {
+    amount: number;
+    fromCurrency: string;
+    toCurrency: string;
+    convertedAmount: number;
+    exchangeRate: number;
+    date?: string; // Date used for conversion (current date if not specified)
+  };
+  error?: string;
+}
+
+export interface ExchangeRateData {
+  provider: string;
+  WARNING_UPGRADE_TO_V6?: string;
+  terms: string;
+  base: string;
+  date: string;
+  time_last_updated: number;
+  rates: {
+    [key: string]: number;
+  };
+}
+
+export interface FrankfurterRateData {
+  amount: number;
+  base: string;
+  date: string;
+  rates: {
+    [key: string]: number;
+  };
+}

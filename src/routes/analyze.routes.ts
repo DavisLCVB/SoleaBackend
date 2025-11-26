@@ -1,7 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { uploadImage, uploadAudio } from '../middleware/upload.middleware';
 import geminiService from '../services/gemini.service';
-import { AnalyzeImageResponse, AnalyzeAudioResponse } from '../types';
+import currencyService from '../services/currency.service';
+import { AnalyzeImageResponse, AnalyzeAudioResponse, CurrencyConversionResponse } from '../types';
 
 const router = Router();
 
@@ -69,10 +70,8 @@ router.post('/analyze-audio', uploadAudio.single('audio'), async (req: Request, 
       } as AnalyzeAudioResponse);
     }
 
-    // Get prompt from request body or use default
     const prompt = req.body.prompt?.trim() || DEFAULT_AUDIO_PROMPT;
 
-    // Validate prompt length
     if (prompt.length > 2000) {
       return res.status(400).json({
         success: false,
@@ -80,14 +79,12 @@ router.post('/analyze-audio', uploadAudio.single('audio'), async (req: Request, 
       } as AnalyzeAudioResponse);
     }
 
-    // Analyze audio with Gemini
     const result = await geminiService.analyzeAudio(
       req.file.buffer,
       req.file.mimetype,
       prompt
     );
 
-    // Send successful response
     return res.json({
       success: true,
       result,
@@ -98,6 +95,73 @@ router.post('/analyze-audio', uploadAudio.single('audio'), async (req: Request, 
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
     } as AnalyzeAudioResponse);
+  }
+});
+
+/**
+ * POST /api/convert-currency
+ * Convert an amount from one currency to another
+ */
+router.post('/convert-currency', async (req: Request, res: Response) => {
+  try {
+    const { amount, fromCurrency, toCurrency, date } = req.body;
+
+    // Validate required fields
+    if (amount === undefined || amount === null) {
+      return res.status(400).json({
+        success: false,
+        error: 'Amount is required',
+      } as CurrencyConversionResponse);
+    }
+
+    if (!fromCurrency) {
+      return res.status(400).json({
+        success: false,
+        error: 'Source currency (fromCurrency) is required',
+      } as CurrencyConversionResponse);
+    }
+
+    if (!toCurrency) {
+      return res.status(400).json({
+        success: false,
+        error: 'Destination currency (toCurrency) is required',
+      } as CurrencyConversionResponse);
+    }
+
+    // Validate amount is a number
+    const numAmount = Number(amount);
+    if (isNaN(numAmount)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Amount must be a valid number',
+      } as CurrencyConversionResponse);
+    }
+
+    // Convert currency (with optional date for historical rates)
+    const { convertedAmount, exchangeRate, date: conversionDate } = await currencyService.convertCurrency(
+      numAmount,
+      fromCurrency,
+      toCurrency,
+      date
+    );
+
+    return res.json({
+      success: true,
+      result: {
+        amount: numAmount,
+        fromCurrency: fromCurrency.toUpperCase(),
+        toCurrency: toCurrency.toUpperCase(),
+        convertedAmount,
+        exchangeRate,
+        date: conversionDate,
+      },
+    } as CurrencyConversionResponse);
+  } catch (error) {
+    console.error('Error in convert-currency route:', error);
+    return res.status(400).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    } as CurrencyConversionResponse);
   }
 });
 
